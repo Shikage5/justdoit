@@ -1,0 +1,248 @@
+<template>
+  <v-container>
+    <v-btn class="mt-2" @click="reset" small color="accent">
+      <v-icon left>mdi-refresh</v-icon>
+      reset
+    </v-btn>
+
+    <v-card class="mx-auto my-10" max-width="700" tile>
+      <v-toolbar dark color="primary">
+        <v-toolbar-title>Project 1</v-toolbar-title>
+        <v-spacer></v-spacer>
+
+        <v-btn @click="sortByPrio = !sortByPrio" icon class="mr-5" small color="white">
+          <v-icon small>mdi-sort</v-icon>
+        </v-btn>
+
+        <v-btn @click="dialog = !dialog" small color="accent">
+          <v-icon left>mdi-plus</v-icon>
+          New
+        </v-btn>
+      </v-toolbar>
+      <v-dialog
+        v-model="dialog"
+        transition="slide-y-transition"
+        max-width="600"
+        overlay-opacity="0.25"
+      >
+        <v-card class="pb-5 px-5" max-width="600">
+          <v-card-title>Add new To-Do</v-card-title>
+          <v-text-field
+            autofocus
+            prepend-icon="mdi-pencil"
+            label="Name"
+            v-model="newItemName"
+          />
+          <v-row class="pb-10">
+            <v-col>
+              <v-menu
+                ref="menu"
+                v-model="menu"
+                :close-on-content-click="false"
+                :return-value.sync="newItemDueDate"
+                transition="scale-transition"
+                offset-y
+                min-width="auto"
+              >
+                <template v-slot:activator="{ on, attrs }">
+                  <v-text-field
+                    v-model="newItemDueDate"
+                    label="Due Date"
+                    prepend-icon="mdi-calendar"
+                    readonly
+                    v-bind="attrs"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="newItemDueDate" no-title scrollable>
+                  <v-spacer></v-spacer>
+                  <v-btn text color="primary" @click="menu = false">
+                    Cancel
+                  </v-btn>
+                  <v-btn
+                    text
+                    color="primary"
+                    @click="$refs.menu.save(newItemDueDate)"
+                  >
+                    OK
+                  </v-btn>
+                </v-date-picker>
+              </v-menu>
+            </v-col>
+            <v-col cols="4">
+              <v-menu
+                ref="menu2"
+                v-model="menu3"
+                :close-on-content-click="false"
+                :nudge-right="40"
+                :return-value.sync="newItemDueTime"
+                transition="scale-transition"
+                offset-y
+                max-width="290px"
+                min-width="290px"
+              >
+                <template v-slot:activator="{ on, attrs }">
+                  <v-text-field
+                    v-model="newItemDueTime"
+                    label="Due Time"
+                    prepend-icon="mdi-clock-time-four-outline"
+                    readonly
+                    v-bind="attrs"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-time-picker
+                  format="24hr"
+                  v-if="menu3"
+                  v-model="newItemDueTime"
+                  full-width
+                  @click:minute="$refs.menu2.save(newItemDueTime)"
+                ></v-time-picker>
+              </v-menu>
+            </v-col>
+            <v-col>
+              <v-select
+                v-model="newItemPriority"
+                :items="[1, 2, 3, 4]"
+                filled
+                label="Priority"
+                dense
+              ></v-select>
+            </v-col>
+          </v-row>
+
+          <v-btn
+            absolute
+            right
+            color="accent"
+            bottom
+            @click="
+              formatDate();
+              addItem();
+              dialog = !dialog;
+            "
+          >
+            <v-icon left>mdi-plus</v-icon>Add
+          </v-btn>
+        </v-card>
+      </v-dialog>
+
+      <v-list-item v-for="item in toDoItems" :key="item.name">
+        <v-checkbox v-model="item.status"></v-checkbox>
+        <v-row>
+          <v-col>
+            <v-list-item-content>
+              <v-list-item-title
+                >{{ item.name }}<v-badge dot inline></v-badge
+              ></v-list-item-title>
+              <v-list-item-subtitle v-if="item.dueDate"
+                >Due Date: {{ item.dueDate }}</v-list-item-subtitle
+              >
+              <v-list-item-subtitle v-if="item.dueTime"
+                >Due Time: {{ item.dueTime }}</v-list-item-subtitle
+              >
+              <v-btn
+                small
+                icon
+                class=""
+                absolute
+                right
+                @click="deleteItem(item)"
+              >
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+            </v-list-item-content>
+          </v-col>
+          <v-col class="mt-5" cols="3">
+            <v-chip small></v-chip>
+          </v-col>
+        </v-row>
+      </v-list-item>
+    </v-card>
+  </v-container>
+</template>
+
+<script lang="ts">
+import { Vue, Component, Prop, Watch } from "vue-property-decorator";
+import toDos from "@/classes/toDos";
+
+@Component
+export default class ToDoList extends Vue {
+  get toDoItems() {
+    let items = this.toDos;
+    if (this.sortByPrio == true) {
+      items.sort((a, b) => {
+        return a.priority - b.priority;
+      });
+    }
+    return items;
+  }
+
+  //layout variables
+  menu = false;
+  menu2 = false;
+  menu3 = false;
+  dialog = false;
+  sortByPrio = false;
+  prioColor={1:"red", 2:"orange", 3:"yellow",4:"light-green"}
+  //To-Do Item variables
+  toDos = [new toDos("", 1, "", "", false)];
+  newItemName = "";
+  newItemPriority = 4;
+  newItemDueDate = "";
+  formatedDueDate = "";
+  newItemDueTime = "";
+
+  @Watch("toDos", { deep: true })
+  onToDosChanged(): void {
+    console.log(this.toDos);
+    window.localStorage.setItem("tododata", JSON.stringify(this.toDos));
+  }
+
+  addItem() {
+    let item = new toDos(
+      this.newItemName,
+      this.newItemPriority,
+      this.newItemDueDate,
+      this.newItemDueTime,
+      false
+    );
+    this.toDos.push(item);
+    this.resetItemVariables();
+  }
+  deleteItem(item: toDos) {
+    console.log(item);
+    let index =this.toDos.findIndex(x => x.name == item.name)
+    this.toDos.splice(index, 1);
+  }
+  resetItemVariables() {
+    this.newItemName = "";
+    this.newItemPriority = 4;
+    this.newItemDueDate = "";
+    this.formatedDueDate = "";
+    this.newItemDueTime = "";
+  }
+  reset() {
+    this.toDos.forEach((element) => {
+      this.toDos.pop();
+    });
+    window.localStorage.clear;
+  }
+  mounted() {
+    this.initToDoList();
+  }
+
+  initToDoList() {
+    let toDoDataStr = window.localStorage.getItem("tododata");
+    if (toDoDataStr == null) return;
+    let toDoListData = JSON.parse(toDoDataStr);
+    this.toDos = toDoListData;
+  }
+  formatDate() {
+    if (!this.newItemDueDate) return null;
+
+    const [year, month, day] = this.newItemDueDate.split("-");
+    this.formatedDueDate = `${day}.${month}.${year}`;
+  }
+}
+</script>
