@@ -6,19 +6,61 @@
     </v-btn>
 
     <v-card class="mx-auto my-10" max-width="700" tile>
+      <!-- Toolbar -->
       <v-toolbar dark color="primary">
         <v-toolbar-title>Project 1</v-toolbar-title>
+        <v-text-field
+          v-model="searchText"
+          append-icon="mdi-magnify"
+          placeholder="Search..."
+          class="ml-5"
+          hide-details
+        ></v-text-field>
         <v-spacer></v-spacer>
 
-        <v-btn @click="sortByPrio = !sortByPrio" icon class="mr-5" small color="white">
-          <v-icon small>mdi-sort</v-icon>
-        </v-btn>
+        <v-menu offset-y>
+          <template v-slot:activator="{ attrs, on }">
+            <v-btn
+              small
+              icon
+              class="mr-3"
+              color="white"
+              v-bind="attrs"
+              v-on="on"
+            >
+              <v-icon small>mdi-sort</v-icon>
+            </v-btn>
+          </template>
+
+          <v-list>
+            <v-list-item
+              link
+              @click="
+                sortByDate = true;
+                sortByPrio = false;
+              "
+            >
+              <v-list-item-title>Date</v-list-item-title>
+            </v-list-item>
+            <v-list-item
+              link
+              @click="
+                sortByPrio = true;
+                sortByDate = false;
+              "
+            >
+              <v-list-item-title>Priority</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
 
         <v-btn @click="dialog = !dialog" small color="accent">
           <v-icon left>mdi-plus</v-icon>
           New
         </v-btn>
       </v-toolbar>
+
+      <!-- New Item menu -->
       <v-dialog
         v-model="dialog"
         transition="slide-y-transition"
@@ -27,14 +69,17 @@
       >
         <v-card class="pb-5 px-5" max-width="600">
           <v-card-title>Add new To-Do</v-card-title>
+
           <v-text-field
             autofocus
             prepend-icon="mdi-pencil"
             label="Name"
             v-model="newItemName"
           />
+
           <v-row class="pb-10">
             <v-col>
+              <!-- Date Picker menu -->
               <v-menu
                 ref="menu"
                 v-model="menu"
@@ -70,6 +115,7 @@
               </v-menu>
             </v-col>
             <v-col cols="4">
+              <!-- Time Picker Menu -->
               <v-menu
                 ref="menu2"
                 v-model="menu3"
@@ -101,6 +147,7 @@
               </v-menu>
             </v-col>
             <v-col>
+              <!-- Priority Selector -->
               <v-select
                 v-model="newItemPriority"
                 :items="[1, 2, 3, 4]"
@@ -127,13 +174,15 @@
         </v-card>
       </v-dialog>
 
-      <v-list-item v-for="item in toDoItems" :key="item.name">
+      <!-- To-Do Items List -->
+      <v-list-item v-for="(item, i) in toDoItems" :key="i">
         <v-checkbox v-model="item.status"></v-checkbox>
         <v-row>
           <v-col>
             <v-list-item-content>
               <v-list-item-title
-                >{{ item.name }}<v-badge dot inline></v-badge
+                >{{ item.name }}
+                <v-badge dot inline :color="prioColor[item.priority]"></v-badge
               ></v-list-item-title>
               <v-list-item-subtitle v-if="item.dueDate"
                 >Due Date: {{ item.dueDate }}</v-list-item-subtitle
@@ -153,9 +202,7 @@
               </v-btn>
             </v-list-item-content>
           </v-col>
-          <v-col class="mt-5" cols="3">
-            <v-chip small></v-chip>
-          </v-col>
+          <v-col class="mt-5" cols="3"> </v-col>
         </v-row>
       </v-list-item>
     </v-card>
@@ -165,26 +212,37 @@
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import toDos from "@/classes/toDos";
+import { parseISO } from "date-fns";
+import { List } from "linq-collections";
 
 @Component
 export default class ToDoList extends Vue {
   get toDoItems() {
     let items = this.toDos;
+
     if (this.sortByPrio == true) {
-      items.sort((a, b) => {
-        return a.priority - b.priority;
-      });
+      items = new List(items).orderBy((i) => i.priority).toArray();
+    }
+    if (this.sortByDate == true) {
+      items = new List(items).orderBy((i) => i.dueDate).toArray();
+    }
+    if (this.searchText) {
+      items = new List(items)
+        .where((i) => i.name.indexOf(this.searchText) >= 0)
+        .toArray();
     }
     return items;
   }
 
-  //layout variables
+  //Layout variables
   menu = false;
   menu2 = false;
   menu3 = false;
   dialog = false;
   sortByPrio = false;
-  prioColor={1:"red", 2:"orange", 3:"yellow",4:"light-green"}
+  sortByDate = false;
+  searchText = "";
+  prioColor = { 1: "red", 2: "orange", 3: "yellow", 4: "light-green" };
   //To-Do Item variables
   toDos = [new toDos("", 1, "", "", false)];
   newItemName = "";
@@ -210,11 +268,13 @@ export default class ToDoList extends Vue {
     this.toDos.push(item);
     this.resetItemVariables();
   }
+
   deleteItem(item: toDos) {
     console.log(item);
-    let index =this.toDos.findIndex(x => x.name == item.name)
+    let index = this.toDos.findIndex((x) => x.name == item.name);
     this.toDos.splice(index, 1);
   }
+
   resetItemVariables() {
     this.newItemName = "";
     this.newItemPriority = 4;
@@ -222,12 +282,14 @@ export default class ToDoList extends Vue {
     this.formatedDueDate = "";
     this.newItemDueTime = "";
   }
+
   reset() {
     this.toDos.forEach((element) => {
       this.toDos.pop();
     });
     window.localStorage.clear;
   }
+
   mounted() {
     this.initToDoList();
   }
@@ -238,6 +300,7 @@ export default class ToDoList extends Vue {
     let toDoListData = JSON.parse(toDoDataStr);
     this.toDos = toDoListData;
   }
+
   formatDate() {
     if (!this.newItemDueDate) return null;
 
