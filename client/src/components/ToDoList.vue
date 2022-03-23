@@ -180,7 +180,7 @@
         <v-row>
           <v-col>
             <v-list-item-content>
-              <v-list-item-title
+              <v-list-item-title link @click="editItem(item)"
                 >{{ item.name }}
                 <v-badge dot inline :color="prioColor[item.priority]"></v-badge
               ></v-list-item-title>
@@ -211,7 +211,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
-import toDos from "@/classes/toDos";
+import toDos from "client/src/classes/toDos";
 import { parseISO } from "date-fns";
 import { List } from "linq-collections";
 
@@ -301,11 +301,12 @@ export default class ToDoList extends Vue {
     this.toDos = toDoListData;
   }
 
-  formatDate() {
-    if (!this.newItemDueDate) return null;
-
-    const [year, month, day] = this.newItemDueDate.split("-");
-    this.formatedDueDate = `${day}.${month}.${year}`;
+  editItem(item: toDos) {
+    this.newItemName = item.name;
+    this.newItemPriority = item.priority;
+    this.newItemDueDate = item.dueDate;
+    this.newItemDueTime = item.dueTime;
+    this.dialog = true;
   }
 }
 </script>
