@@ -54,7 +54,15 @@
           </v-list>
         </v-menu>
 
-        <v-btn @click="dialog = !dialog" small color="accent">
+        <v-btn
+          @click="
+            dialog = true;
+            newDialog = true;
+            editDialog = false;
+          "
+          small
+          color="accent"
+        >
           <v-icon left>mdi-plus</v-icon>
           New
         </v-btn>
@@ -68,7 +76,8 @@
         overlay-opacity="0.25"
       >
         <v-card class="pb-5 px-5" max-width="600">
-          <v-card-title>Add new To-Do</v-card-title>
+          <v-card-title v-if="newDialog">Add new To-Do</v-card-title>
+          <v-card-title v-if="editDialog">Edit To-Do</v-card-title>
 
           <v-text-field
             autofocus
@@ -159,17 +168,24 @@
           </v-row>
 
           <v-btn
+            v-if="newDialog"
             absolute
             right
             color="accent"
             bottom
-            @click="
-              formatDate();
-              addItem();
-              dialog = !dialog;
-            "
+            @click="addItem()"
           >
             <v-icon left>mdi-plus</v-icon>Add
+          </v-btn>
+          <v-btn
+            v-if="editDialog"
+            absolute
+            right
+            color="accent"
+            bottom
+            @click="editItem(selectedItem)"
+          >
+            <v-icon left>mdi-pencil</v-icon>Edit
           </v-btn>
         </v-card>
       </v-dialog>
@@ -180,7 +196,14 @@
         <v-row>
           <v-col>
             <v-list-item-content>
-              <v-list-item-title link @click="editItem(item)"
+              <v-list-item-title
+                link
+                @click="
+                  selectedItem = loadItem(item);
+                  dialog = true;
+                  newDialog = false;
+                  editDialog = true;
+                "
                 >{{ item.name }}
                 <v-badge dot inline :color="prioColor[item.priority]"></v-badge
               ></v-list-item-title>
@@ -211,7 +234,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
-import toDos from "client/src/classes/toDos";
+import toDos from "../classes/toDos";
 import { parseISO } from "date-fns";
 import { List } from "linq-collections";
 
@@ -239,9 +262,12 @@ export default class ToDoList extends Vue {
   menu2 = false;
   menu3 = false;
   dialog = false;
+  newDialog = false;
+  editDialog = false;
   sortByPrio = false;
   sortByDate = false;
   searchText = "";
+  selectedItem!: toDos;
   prioColor = { 1: "red", 2: "orange", 3: "yellow", 4: "light-green" };
   //To-Do Item variables
   toDos = [new toDos("", 1, "", "", false)];
@@ -267,6 +293,8 @@ export default class ToDoList extends Vue {
     );
     this.toDos.push(item);
     this.resetItemVariables();
+    this.dialog = false;
+    this.newDialog = false;
   }
 
   deleteItem(item: toDos) {
@@ -300,13 +328,21 @@ export default class ToDoList extends Vue {
     let toDoListData = JSON.parse(toDoDataStr);
     this.toDos = toDoListData;
   }
-
-  editItem(item: toDos) {
+  loadItem(item: toDos) {
     this.newItemName = item.name;
     this.newItemPriority = item.priority;
     this.newItemDueDate = item.dueDate;
     this.newItemDueTime = item.dueTime;
-    this.dialog = true;
+    return item;
+  }
+
+  editItem(item: toDos) {
+    item.name = this.newItemName;
+    item.priority = this.newItemPriority;
+    item.dueDate = this.newItemDueDate;
+    item.dueTime = this.newItemDueTime;
+    this.dialog = false;
+    this.editDialog = false;
   }
 }
 </script>
