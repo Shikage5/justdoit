@@ -197,6 +197,7 @@
           <v-col>
             <v-list-item-content>
               <v-list-item-title
+                :class="cross(item)"
                 link
                 @click="
                   selectedItem = loadItem(item);
@@ -343,6 +344,13 @@ export default class ToDoList extends Vue {
     item.dueTime = this.newItemDueTime;
     this.dialog = false;
     this.editDialog = false;
+  }
+  cross(item: toDos) {
+    if (item.status) {
+      return "text-decoration-line-through";
+    } else {
+      return "";
+    }
   }
 }
 </script>
