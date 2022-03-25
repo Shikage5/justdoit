@@ -185,7 +185,7 @@
             bottom
             @click="editItem(selectedItem)"
           >
-            <v-icon left>mdi-pencil</v-icon>Edit
+            <v-icon left>mdi-content-save</v-icon>Save
           </v-btn>
         </v-card>
       </v-dialog>

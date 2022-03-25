@@ -9,8 +9,8 @@
 
 <script lang="ts">
 import Vue from "vue";
-import Navigation from "@/components/Navigation.vue";
-import ToDoList from "@/components/ToDoList.vue";
+import Navigation from "../src/components/Navigation.vue";
+import ToDoList from "../src/components/ToDoList.vue";
 
 export default Vue.extend({
   name: "App",
@@ -20,4 +20,4 @@ export default Vue.extend({
   },
   data: () => ({}),
 });
-</script>
+</script>  

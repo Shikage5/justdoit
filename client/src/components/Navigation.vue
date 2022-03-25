@@ -22,14 +22,48 @@
 
       <v-divider></v-divider>
 
+      <v-dialog
+        v-model="dialog"
+        transition="slide-y-transition"
+        max-width="600"
+        overlay-opacity="0.25"
+      >
+        <v-card class="pb-5 px-5" max-width="600">
+          <v-card-title>Add Project</v-card-title>
+
+          <v-text-field
+            class="mb-7"
+            autofocus
+            prepend-icon="mdi-pencil"
+            label="Name"
+            v-model="newProjectName"
+          ></v-text-field>
+
+          <v-btn absolute right color="accent" bottom @click="addProject()">
+            <v-icon left>mdi-plus</v-icon>Add
+          </v-btn>
+        </v-card>
+      </v-dialog>
+
       <v-list dense nav>
-        <v-list-item v-for="item in items" :key="item.title" link>
+        <v-list-item link @click="dialog = true" class="accent">
           <v-list-item-icon>
-            <v-icon>{{ item.icon }}</v-icon>
+            <v-icon dark>mdi-plus</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title class="white--text"
+              >Add Project</v-list-item-title
+            >
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item v-for="(item,i) in projects" :key="i" link>
+          <v-list-item-icon>
+            <v-icon>mdi-application-braces-outline</v-icon>
           </v-list-item-icon>
 
           <v-list-item-content>
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
+            <v-list-item-title>{{ item.name }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -38,16 +72,22 @@
 </template>
 
 <script>
-export default {
-  data() {
-    return {
-      items: [
-        { title: "Project 1", icon: "mdi-code-braces-box" },
-        { title: "Project 2", icon: "mdi-code-braces-box" },
-        { title: "Project 3", icon: "mdi-code-braces-box" },
-      ],
-      right: null,
-    };
-  },
-};
+import { Vue, Component, Prop, Watch } from "vue-property-decorator";
+
+@Component
+export default class Navigation extends Vue {
+  projects = [];
+  dialog = false;
+  newProjectName = "";
+
+  addProject() {
+    let newItem = {name:this.newProjectName}
+    this.projects.push(newItem);
+    this.reset();
+    this.dialog = false;
+  }
+  reset() {
+    this.newProjectName = "";
+  }
+}
 </script>
