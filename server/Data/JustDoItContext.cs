@@ -9,7 +9,7 @@ namespace JustDoIt.Data
 {
     public class JustDoItDBContext : DbContext
     {
-        public DbSet<ToDoItem>? ToDoItems { get; set; }
+        public DbSet<ToDoItem> ToDoItems { get; set; }= null!;
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer(@"data source=G02DEXN05630;initial catalog=JustDoItDb;trusted_connection=true");
