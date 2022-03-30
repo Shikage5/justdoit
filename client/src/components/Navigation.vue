@@ -36,10 +36,10 @@
             autofocus
             prepend-icon="mdi-pencil"
             label="Name"
-            v-model="newProjectName"
+            v-model="project.name"
           ></v-text-field>
 
-          <v-btn absolute right color="accent" bottom @click="addProject()">
+          <v-btn absolute right color="accent" bottom @click="$store.commit('ADD_PROJECT',project.name);dialog=false">
             <v-icon left>mdi-plus</v-icon>Add
           </v-btn>
         </v-card>
@@ -57,7 +57,7 @@
           </v-list-item-content>
         </v-list-item>
 
-        <v-list-item v-for="(item,i) in projects" :key="i" link>
+        <v-list-item v-for="(item,i) in $store.state.projects" :key="i" link @click="$store.commit('SELECT_PROJECT',item.name)">
           <v-list-item-icon>
             <v-icon>mdi-application-braces-outline</v-icon>
           </v-list-item-icon>
@@ -76,16 +76,9 @@ import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 
 @Component
 export default class Navigation extends Vue {
-  projects = [];
-  dialog = false;
-  newProjectName = "";
 
-  addProject() {
-    let newItem = {name:this.newProjectName}
-    this.projects.push(newItem);
-    this.reset();
-    this.dialog = false;
-  }
+  dialog = false;
+  project = {name:''}
   reset() {
     this.newProjectName = "";
   }

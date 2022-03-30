@@ -1,4 +1,4 @@
-export default class toDos {
+export default class ToDo {
     constructor(name: string, priority: number, dueDate: string, dueTime: string, status: boolean) {
         this.name = name
         this.priority = priority

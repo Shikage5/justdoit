@@ -8,7 +8,7 @@
     <v-card class="mx-auto my-10" max-width="700" tile>
       <!-- Toolbar -->
       <v-toolbar dark color="primary">
-        <v-toolbar-title>Project 1</v-toolbar-title>
+        <v-toolbar-title>{{ $store.getters.getProjectName }}</v-toolbar-title>
         <v-text-field
           v-model="searchText"
           append-icon="mdi-magnify"
@@ -235,14 +235,14 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
-import toDos from "../classes/toDos";
-import { parseISO } from "date-fns";
+import ToDo from "../classes/ToDo";
 import { List } from "linq-collections";
+import store from "../store";
 
 @Component
 export default class ToDoList extends Vue {
   get toDoItems() {
-    let items = this.toDos;
+    let items: ToDo[] = this.$store.getters.getSelectedList;
 
     if (this.sortByPrio == true) {
       items = new List(items).orderBy((i) => i.priority).toArray();
@@ -257,7 +257,9 @@ export default class ToDoList extends Vue {
     }
     return items;
   }
-
+  get toDos(): ToDo[] {
+    return this.$store.getters.getSelectedList;
+  }
   //Layout variables
   menu = false;
   menu2 = false;
@@ -268,10 +270,10 @@ export default class ToDoList extends Vue {
   sortByPrio = false;
   sortByDate = false;
   searchText = "";
-  selectedItem!: toDos;
+  selectedItem!: ToDo;
   prioColor = { 1: "red", 2: "orange", 3: "yellow", 4: "light-green" };
   //To-Do Item variables
-  toDos = [new toDos("", 1, "", "", false)];
+
   newItemName = "";
   newItemPriority = 4;
   newItemDueDate = "";
@@ -285,7 +287,7 @@ export default class ToDoList extends Vue {
   }
 
   addItem() {
-    let item = new toDos(
+    let item = new ToDo(
       this.newItemName,
       this.newItemPriority,
       this.newItemDueDate,
@@ -298,7 +300,7 @@ export default class ToDoList extends Vue {
     this.newDialog = false;
   }
 
-  deleteItem(item: toDos) {
+  deleteItem(item: ToDo) {
     console.log(item);
     let index = this.toDos.findIndex((x) => x.name == item.name);
     this.toDos.splice(index, 1);
@@ -319,17 +321,18 @@ export default class ToDoList extends Vue {
     window.localStorage.clear;
   }
 
-  mounted() {
-    this.initToDoList();
-  }
+  // mounted() {
+  //   this.initToDoList();
+  // }
 
-  initToDoList() {
-    let toDoDataStr = window.localStorage.getItem("tododata");
-    if (toDoDataStr == null) return;
-    let toDoListData = JSON.parse(toDoDataStr);
-    this.toDos = toDoListData;
-  }
-  loadItem(item: toDos) {
+  // initToDoList() {
+  //   let toDoDataStr = window.localStorage.getItem("tododata");
+  //   if (toDoDataStr == null) return;
+  //   let toDoListData = JSON.parse(toDoDataStr);
+  //   this.toDos = toDoListData;
+  // }
+
+  loadItem(item: ToDo) {
     this.newItemName = item.name;
     this.newItemPriority = item.priority;
     this.newItemDueDate = item.dueDate;
@@ -337,7 +340,7 @@ export default class ToDoList extends Vue {
     return item;
   }
 
-  editItem(item: toDos) {
+  editItem(item: ToDo) {
     item.name = this.newItemName;
     item.priority = this.newItemPriority;
     item.dueDate = this.newItemDueDate;
@@ -345,7 +348,7 @@ export default class ToDoList extends Vue {
     this.dialog = false;
     this.editDialog = false;
   }
-  cross(item: toDos) {
+  cross(item: ToDo) {
     if (item.status) {
       return "text-decoration-line-through";
     } else {
