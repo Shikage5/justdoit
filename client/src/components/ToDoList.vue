@@ -192,8 +192,10 @@
       </v-dialog>
 
       <!-- To-Do Items List -->
-      <v-list-item v-for="(item, i) in toDoItems" :key="i">
-        <v-checkbox v-model="item.status"></v-checkbox>
+      <v-list-item v-for="item in toDoItems" :key="item.id">
+        <v-checkbox
+          v-model="item.status"
+        ></v-checkbox>
         <v-row>
           <v-col>
             <v-list-item-content>
@@ -202,6 +204,7 @@
                 link
                 @click="
                   selectedItem = loadItem(item);
+                  selectedItemId = item.id;
                   dialog = true;
                   newDialog = false;
                   editDialog = true;
@@ -221,7 +224,10 @@
                 class=""
                 absolute
                 right
-                @click="deleteItem(item)"
+                @click="
+                  selectedItemId = item.id;
+                  deleteItem(item);
+                "
               >
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
@@ -257,6 +263,7 @@ export default class ToDoList extends Vue {
         .where((i) => i.name.indexOf(this.searchText) >= 0)
         .toArray();
     }
+    console.log(items);
     return items;
   }
   get toDos(): ToDo[] {
@@ -273,6 +280,7 @@ export default class ToDoList extends Vue {
   sortByDate = false;
   searchText = "";
   selectedItem!: ToDo;
+  selectedItemId!: number;
   prioColor = { 1: "red", 2: "orange", 3: "yellow", 4: "light-green" };
   //To-Do Item variables
 
@@ -311,6 +319,12 @@ export default class ToDoList extends Vue {
     console.log(item);
     let index = this.toDos.findIndex((x) => x.name == item.name);
     this.toDos.splice(index, 1);
+    console.log(this.selectedItemId);
+    this.removeItem(this.selectedItemId);
+  }
+
+  async removeItem(id: number) {
+    let resp = await rest.url("DoIt/delete").query({ id }).delete();
   }
 
   resetItemVariables() {
@@ -351,10 +365,10 @@ export default class ToDoList extends Vue {
     item.dueTime = this.newItemDueTime;
     this.dialog = false;
     this.editDialog = false;
-    this.updateItem(item);
+    this.updateItem(this.selectedItemId, item);
   }
-  async updateItem(item: ToDo) {
-    let resp = await rest.url("DoIt/update").post(item).json();
+  async updateItem(id: number, item: ToDo) {
+    let resp = await rest.url("DoIt/update").query({ id }).post(item).json();
     console.log(resp);
   }
 

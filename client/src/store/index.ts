@@ -10,7 +10,7 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    projects: [{ name: "default", toDos: [new ToDo("", 1, "", "", false)] }],
+    projects: [{  name: "default", toDos: [new ToDo("", 1, "", "", false)]}],
     selectedProjectName: "default",
   },
   getters: {
