@@ -4,7 +4,7 @@ using JustDoIt.Data;
 using JustDoIt.ViewModels;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class DoItController : ControllerBase
 {
 

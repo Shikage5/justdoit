@@ -59,6 +59,7 @@
             dialog = true;
             newDialog = true;
             editDialog = false;
+            resetItemVariables();
           "
           small
           color="accent"
@@ -238,6 +239,7 @@ import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import ToDo from "../classes/ToDo";
 import { List } from "linq-collections";
 import store from "../store";
+import rest from "../rest";
 
 @Component
 export default class ToDoList extends Vue {
@@ -295,9 +297,14 @@ export default class ToDoList extends Vue {
       false
     );
     this.toDos.push(item);
-    this.resetItemVariables();
     this.dialog = false;
     this.newDialog = false;
+    this.postNewItem(item);
+  }
+
+  async postNewItem(item: ToDo) {
+    let resp = await rest.url("DoIt/new").post(item).json();
+    console.log(resp);
   }
 
   deleteItem(item: ToDo) {
@@ -321,16 +328,13 @@ export default class ToDoList extends Vue {
     window.localStorage.clear;
   }
 
-  // mounted() {
-  //   this.initToDoList();
-  // }
+  mounted() {
+    this.initToDoList();
+  }
 
-  // initToDoList() {
-  //   let toDoDataStr = window.localStorage.getItem("tododata");
-  //   if (toDoDataStr == null) return;
-  //   let toDoListData = JSON.parse(toDoDataStr);
-  //   this.toDos = toDoListData;
-  // }
+  initToDoList() {
+    this.$store.dispatch("getToDoItems");
+  }
 
   loadItem(item: ToDo) {
     this.newItemName = item.name;
@@ -347,7 +351,13 @@ export default class ToDoList extends Vue {
     item.dueTime = this.newItemDueTime;
     this.dialog = false;
     this.editDialog = false;
+    this.updateItem(item);
   }
+  async updateItem(item: ToDo) {
+    let resp = await rest.url("DoIt/update").post(item).json();
+    console.log(resp);
+  }
+
   cross(item: ToDo) {
     if (item.status) {
       return "text-decoration-line-through";
