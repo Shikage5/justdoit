@@ -3,6 +3,7 @@ using JustDoIt.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace server.Migrations
 {
     [DbContext(typeof(JustDoItDBContext))]
-    partial class JustDoItDBContextModelSnapshot : ModelSnapshot
+    [Migration("20220331093411_ProjectNameAdded")]
+    partial class ProjectNameAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

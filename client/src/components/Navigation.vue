@@ -36,10 +36,19 @@
             autofocus
             prepend-icon="mdi-pencil"
             label="Name"
-            v-model="project.name"
+            v-model="projectName"
           ></v-text-field>
 
-          <v-btn absolute right color="accent" bottom @click="$store.commit('ADD_PROJECT',project.name);dialog=false">
+          <v-btn
+            absolute
+            right
+            color="accent"
+            bottom
+            @click="
+              $store.dispatch('selectProject', projectName);
+              dialog = false;
+            "
+          >
             <v-icon left>mdi-plus</v-icon>Add
           </v-btn>
         </v-card>
@@ -57,13 +66,18 @@
           </v-list-item-content>
         </v-list-item>
 
-        <v-list-item v-for="(item,i) in $store.state.projects" :key="i" link @click="$store.commit('SELECT_PROJECT',item.name)">
+        <v-list-item
+          v-for="(item, i) in $store.state.projectNames"
+          :key="i"
+          link
+          @click="$store.dispatch('selectProject', item)"
+        >
           <v-list-item-icon>
             <v-icon>mdi-application-braces-outline</v-icon>
           </v-list-item-icon>
 
           <v-list-item-content>
-            <v-list-item-title>{{ item.name }}</v-list-item-title>
+            <v-list-item-title>{{ item }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -76,11 +90,13 @@ import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 
 @Component
 export default class Navigation extends Vue {
-
   dialog = false;
-  project = {name:''}
+  projectName = "";
   reset() {
     this.newProjectName = "";
+  }
+  mounted() {
+    this.$store.dispatch("getProjectNames");
   }
 }
 </script>

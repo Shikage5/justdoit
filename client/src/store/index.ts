@@ -2,43 +2,54 @@ import Vue from "vue";
 import Vuex from "vuex";
 import { List } from "linq-collections";
 import ToDo from "@/classes/ToDo";
-import Project from "@/classes/Project";
-import rest from "../rest"
+import rest from "../rest";
 import { parseJSON } from "date-fns";
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    projects: [{  name: "default", toDos: [new ToDo("", 1, "", "", false)]}],
+    projectNames: <string[]>[],
+    toDos: <ToDo[]>[],
     selectedProjectName: "default",
+    sortByPrio: false,
   },
   getters: {
-    getSelectedList(state): ToDo[] {
-      return new List(state.projects).single(
-        (p) => p.name == state.selectedProjectName
-      ).toDos;
-    },
     getProjectName(state) {
       return state.selectedProjectName;
     },
   },
   mutations: {
-    ADD_PROJECT(state, projectName: string) {
-      state.projects.push(new Project(projectName));
+    SET_PROJECTNAMES(state, projectNames: string[]) {
+      state.projectNames = projectNames;
     },
     SELECT_PROJECT(state, projectName: string) {
       state.selectedProjectName = projectName;
     },
     SET_TODOS(state, toDos) {
-      state.projects[0].toDos = toDos
+      state.toDos = toDos;
+    },
+    SWITCH_SORTING(state) {
+      state.sortByPrio = !state.sortByPrio;
     },
   },
   actions: {
-    async getToDoItems({commit}){
-      let toDos= await rest.url("DoIt/get").get().json();
+    async getToDoItems({ commit }) {
+      let toDos = await rest
+        .url("DoIt/get")
+        .query({ projectName: this.state.selectedProjectName })
+        .get()
+        .json();
       console.log(toDos);
-      commit('SET_TODOS', toDos)
+      commit("SET_TODOS", toDos);
+    },
+    async selectProject({ commit }, projectName) {
+      commit("SELECT_PROJECT", projectName);
+      this.dispatch("getToDoItems");
+    },
+    async getProjectNames({ commit }) {
+      let projectNames = await rest.url("DoIt/getProjectNames").get().json();
+      commit("SET_PROJECTNAMES", projectNames);
     },
   },
   modules: {},

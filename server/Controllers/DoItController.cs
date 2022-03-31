@@ -18,15 +18,23 @@ public class DoItController : ControllerBase
     }
 
     [HttpGet("get")]
-    public IActionResult GetToDos()
+    public IActionResult GetToDos([FromQuery] string projectName)
     {
-        var todos = _context.ToDoItems.ToList()!;
+        var todos = _context.ToDoItems.Where(i => i.ProjectName == projectName).ToList();
 
         return Ok(todos);
 
     }
+    [HttpGet("getProjectNames")]
+    public IActionResult GetProjectNames()
+    {
+        var projectNames = _context.ToDoItems.Select(i=>i.ProjectName).Distinct().ToList();
+
+        return Ok(projectNames);
+
+    }
     [HttpPost("new")]
-    public IActionResult PostToDo([FromBody] AddToDoVm addToDo)
+    public IActionResult PostToDo([FromBody] ToDoItem addToDo)
     {
 
         var todo = new ToDoItem();
@@ -42,9 +50,9 @@ public class DoItController : ControllerBase
         return Ok(todo);
     }
     [HttpPost("update")]
-    public IActionResult UpdateToDo([FromQuery] int Id, [FromBody] AddToDoVm updateToDo)
+    public IActionResult UpdateToDo([FromBody] ToDoItem updateToDo)
     {
-        var todo = _context.ToDoItems.FirstOrDefault(x => x.Id == Id);
+        var todo = _context.ToDoItems.FirstOrDefault(x => x.Id == updateToDo.Id);
         if (todo == null)
         {
             return BadRequest();

@@ -33,22 +33,10 @@
           </template>
 
           <v-list>
-            <v-list-item
-              link
-              @click="
-                sortByDate = true;
-                sortByPrio = false;
-              "
-            >
+            <v-list-item link @click="$store.commit('SWITCH_SORTING')">
               <v-list-item-title>Date</v-list-item-title>
             </v-list-item>
-            <v-list-item
-              link
-              @click="
-                sortByPrio = true;
-                sortByDate = false;
-              "
-            >
+            <v-list-item link @click="$store.commit('SWITCH_SORTING')">
               <v-list-item-title>Priority</v-list-item-title>
             </v-list-item>
           </v-list>
@@ -195,6 +183,7 @@
       <v-list-item v-for="item in toDoItems" :key="item.id">
         <v-checkbox
           v-model="item.status"
+          @change="updateItem(item)"
         ></v-checkbox>
         <v-row>
           <v-col>
@@ -204,7 +193,6 @@
                 link
                 @click="
                   selectedItem = loadItem(item);
-                  selectedItemId = item.id;
                   dialog = true;
                   newDialog = false;
                   editDialog = true;
@@ -225,7 +213,6 @@
                 absolute
                 right
                 @click="
-                  selectedItemId = item.id;
                   deleteItem(item);
                 "
               >
@@ -250,12 +237,11 @@ import rest from "../rest";
 @Component
 export default class ToDoList extends Vue {
   get toDoItems() {
-    let items: ToDo[] = this.$store.getters.getSelectedList;
-
-    if (this.sortByPrio == true) {
+    let items: ToDo[] = this.$store.state.toDos;
+    console.log()
+    if (this.$store.state.sortByPrio == true) {
       items = new List(items).orderBy((i) => i.priority).toArray();
-    }
-    if (this.sortByDate == true) {
+    } else {
       items = new List(items).orderBy((i) => i.dueDate).toArray();
     }
     if (this.searchText) {
@@ -266,9 +252,9 @@ export default class ToDoList extends Vue {
     console.log(items);
     return items;
   }
-  get toDos(): ToDo[] {
-    return this.$store.getters.getSelectedList;
-  }
+  // get toDos(): ToDo[] {
+  //   return this.$store.getters.getSelectedList;
+  // }
   //Layout variables
   menu = false;
   menu2 = false;
@@ -276,8 +262,6 @@ export default class ToDoList extends Vue {
   dialog = false;
   newDialog = false;
   editDialog = false;
-  sortByPrio = false;
-  sortByDate = false;
   searchText = "";
   selectedItem!: ToDo;
   selectedItemId!: number;
@@ -292,22 +276,23 @@ export default class ToDoList extends Vue {
 
   @Watch("toDos", { deep: true })
   onToDosChanged(): void {
-    console.log(this.toDos);
-    window.localStorage.setItem("tododata", JSON.stringify(this.toDos));
+    console.log(this.toDoItems);
+    window.localStorage.setItem("tododata", JSON.stringify(this.toDoItems));
   }
 
   addItem() {
     let item = new ToDo(
+      this.$store.getters.getProjectName,
       this.newItemName,
       this.newItemPriority,
       this.newItemDueDate,
       this.newItemDueTime,
       false
     );
-    this.toDos.push(item);
     this.dialog = false;
     this.newDialog = false;
     this.postNewItem(item);
+    this.$store.dispatch('getToDoItems')
   }
 
   async postNewItem(item: ToDo) {
@@ -317,10 +302,9 @@ export default class ToDoList extends Vue {
 
   deleteItem(item: ToDo) {
     console.log(item);
-    let index = this.toDos.findIndex((x) => x.name == item.name);
-    this.toDos.splice(index, 1);
-    console.log(this.selectedItemId);
-    this.removeItem(this.selectedItemId);
+    let index = this.toDoItems.findIndex((x) => x.name == item.name);
+    this.toDoItems.splice(index, 1);
+    this.removeItem(item.id);
   }
 
   async removeItem(id: number) {
@@ -336,8 +320,8 @@ export default class ToDoList extends Vue {
   }
 
   reset() {
-    this.toDos.forEach((element) => {
-      this.toDos.pop();
+    this.toDoItems.forEach((element) => {
+      this.toDoItems.pop();
     });
     window.localStorage.clear;
   }
@@ -365,10 +349,10 @@ export default class ToDoList extends Vue {
     item.dueTime = this.newItemDueTime;
     this.dialog = false;
     this.editDialog = false;
-    this.updateItem(this.selectedItemId, item);
+    this.updateItem(item);
   }
-  async updateItem(id: number, item: ToDo) {
-    let resp = await rest.url("DoIt/update").query({ id }).post(item).json();
+  async updateItem(item: ToDo) {
+    let resp = await rest.url("DoIt/update").post(item).json();
     console.log(resp);
   }
 
