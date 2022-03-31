@@ -1,5 +1,5 @@
 <template>
-    <ToDoList />
+    <ToDoList/>
 </template>
 
 <script lang="ts">

@@ -45,6 +45,7 @@
             color="accent"
             bottom
             @click="
+              $store.dispatch('addProject',projectName);
               $store.dispatch('selectProject', projectName);
               dialog = false;
             "
@@ -78,7 +79,21 @@
 
           <v-list-item-content>
             <v-list-item-title>{{ item }}</v-list-item-title>
+           
           </v-list-item-content>
+           <v-btn
+                x-small
+                icon
+                class=""
+                absolute
+                right
+                @click="
+                  $store.dispatch('deleteProject', item);
+                "
+              >
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+          
         </v-list-item>
       </v-list>
     </v-navigation-drawer>

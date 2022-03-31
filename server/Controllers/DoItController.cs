@@ -25,19 +25,13 @@ public class DoItController : ControllerBase
         return Ok(todos);
 
     }
-    [HttpGet("getProjectNames")]
-    public IActionResult GetProjectNames()
-    {
-        var projectNames = _context.ToDoItems.Select(i=>i.ProjectName).Distinct().ToList();
 
-        return Ok(projectNames);
-
-    }
     [HttpPost("new")]
     public IActionResult PostToDo([FromBody] ToDoItem addToDo)
     {
 
         var todo = new ToDoItem();
+        todo.ProjectName = addToDo.ProjectName;
         todo.Name = addToDo.Name;
         todo.Priority = addToDo.Priority;
         todo.DueDate = addToDo.DueDate;
@@ -78,6 +72,29 @@ public class DoItController : ControllerBase
             return BadRequest();
         }
         _context.ToDoItems.Remove(todo);
+        _context.SaveChanges();
+        return Ok();
+    }
+    [HttpGet("getProjectNames")]
+    public IActionResult GetProjectNames()
+    {
+        var projectNames = _context.ToDoItems.Select(i => i.ProjectName).Distinct().ToList();
+
+        return Ok(projectNames);
+
+    }
+    [HttpDelete("deleteProject")]
+    public IActionResult DeleteProject([FromQuery] string projectName)
+    {
+        var projectToDos = _context.ToDoItems.Where(i=>i.ProjectName==projectName).ToArray();
+        if (projectToDos == null)
+        {
+            return BadRequest();
+        }
+        foreach (var item in projectToDos)
+        {
+            _context.ToDoItems.Remove(item);
+        }
         _context.SaveChanges();
         return Ok();
     }

@@ -1,10 +1,5 @@
 <template>
-  <v-container>
-    <v-btn class="mt-2" @click="reset" small color="accent">
-      <v-icon left>mdi-refresh</v-icon>
-      reset
-    </v-btn>
-
+  <v-container v-if="$store.state.selectedProjectName != ''">
     <v-card class="mx-auto my-10" max-width="700" tile>
       <!-- Toolbar -->
       <v-toolbar dark color="primary">
@@ -212,9 +207,7 @@
                 class=""
                 absolute
                 right
-                @click="
-                  deleteItem(item);
-                "
+                @click="deleteItem(item)"
               >
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
@@ -223,6 +216,19 @@
           <v-col class="mt-5" cols="3"> </v-col>
         </v-row>
       </v-list-item>
+    </v-card>
+  </v-container>
+  <v-container v-else>
+    <v-img
+      max-width="75"
+      max-height="75"
+      src="@/assets/arrow.png"
+      class="mt-10 ml-n3"
+    ></v-img>
+    <v-card max-width="250" elevation="2" outlined>
+      <v-card-text class="text-center"
+        >Get started by adding a project</v-card-text
+      >
     </v-card>
   </v-container>
 </template>
@@ -238,7 +244,8 @@ import rest from "../rest";
 export default class ToDoList extends Vue {
   get toDoItems() {
     let items: ToDo[] = this.$store.state.toDos;
-    console.log()
+    items = new List(items).where(i=>i.name!="").toArray();
+    console.log();
     if (this.$store.state.sortByPrio == true) {
       items = new List(items).orderBy((i) => i.priority).toArray();
     } else {
@@ -252,9 +259,7 @@ export default class ToDoList extends Vue {
     console.log(items);
     return items;
   }
-  // get toDos(): ToDo[] {
-  //   return this.$store.getters.getSelectedList;
-  // }
+
   //Layout variables
   menu = false;
   menu2 = false;
@@ -292,7 +297,7 @@ export default class ToDoList extends Vue {
     this.dialog = false;
     this.newDialog = false;
     this.postNewItem(item);
-    this.$store.dispatch('getToDoItems')
+    this.$store.dispatch("getToDoItems");
   }
 
   async postNewItem(item: ToDo) {
@@ -301,10 +306,8 @@ export default class ToDoList extends Vue {
   }
 
   deleteItem(item: ToDo) {
-    console.log(item);
-    let index = this.toDoItems.findIndex((x) => x.name == item.name);
-    this.toDoItems.splice(index, 1);
     this.removeItem(item.id);
+    this.$store.dispatch("getToDoItems");
   }
 
   async removeItem(id: number) {
@@ -317,13 +320,6 @@ export default class ToDoList extends Vue {
     this.newItemDueDate = "";
     this.formatedDueDate = "";
     this.newItemDueTime = "";
-  }
-
-  reset() {
-    this.toDoItems.forEach((element) => {
-      this.toDoItems.pop();
-    });
-    window.localStorage.clear;
   }
 
   mounted() {

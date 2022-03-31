@@ -11,7 +11,7 @@ export default new Vuex.Store({
   state: {
     projectNames: <string[]>[],
     toDos: <ToDo[]>[],
-    selectedProjectName: "default",
+    selectedProjectName: "",
     sortByPrio: false,
   },
   getters: {
@@ -32,6 +32,9 @@ export default new Vuex.Store({
     SWITCH_SORTING(state) {
       state.sortByPrio = !state.sortByPrio;
     },
+    ADD_PROJECT(state, stdToDO) {
+      state.toDos.push(stdToDO);
+    },
   },
   actions: {
     async getToDoItems({ commit }) {
@@ -42,6 +45,17 @@ export default new Vuex.Store({
         .json();
       console.log(toDos);
       commit("SET_TODOS", toDos);
+    },
+    async addProject({ commit }, projectName) {
+      let stdToDO = new ToDo(projectName, "", 1, "", "", false);
+      let resp = await rest.url("DoIt/new").post(stdToDO).json();
+      commit("ADD_PROJECT", resp);
+      this.dispatch("getProjectNames");
+    },
+    async deleteProject({commit},projectName) {
+      await rest.url("DoIt/deleteProject").query({ projectName }).delete();
+      this.dispatch("getToDoItems");
+      this.dispatch("getProjectNames");
     },
     async selectProject({ commit }, projectName) {
       commit("SELECT_PROJECT", projectName);
