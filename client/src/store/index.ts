@@ -52,9 +52,8 @@ export default new Vuex.Store({
       commit("ADD_PROJECT", resp);
       this.dispatch("getProjectNames");
     },
-    async deleteProject({commit},projectName) {
+    async deleteProject({ commit }, projectName) {
       await rest.url("DoIt/deleteProject").query({ projectName }).delete();
-      this.dispatch("getToDoItems");
       this.dispatch("getProjectNames");
     },
     async selectProject({ commit }, projectName) {
@@ -62,8 +61,20 @@ export default new Vuex.Store({
       this.dispatch("getToDoItems");
     },
     async getProjectNames({ commit }) {
-      let projectNames = await rest.url("DoIt/getProjectNames").get().json();
+      let projectNames: string[] = await rest
+        .url("DoIt/getProjectNames")
+        .get()
+        .json();
       commit("SET_PROJECTNAMES", projectNames);
+
+      if (
+        projectNames.length > 0 &&
+        !projectNames.find((i) => i == this.state.selectedProjectName)
+      ) {
+        this.dispatch("selectProject", this.state.projectNames[0]);
+      } else {
+        this.dispatch("selectProject", "");
+      }
     },
   },
   modules: {},
