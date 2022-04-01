@@ -50,7 +50,8 @@ export default new Vuex.Store({
       let stdToDO = new ToDo(projectName, "", 1, "", "", false);
       let resp = await rest.url("DoIt/new").post(stdToDO).json();
       commit("ADD_PROJECT", resp);
-      this.dispatch("getProjectNames");
+      await this.dispatch("getProjectNames");
+      await this.dispatch("selectProject", projectName);
     },
     async deleteProject({ commit }, projectName) {
       await rest.url("DoIt/deleteProject").query({ projectName }).delete();
