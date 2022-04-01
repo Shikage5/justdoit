@@ -11,7 +11,7 @@ const routes: Array<RouteConfig> = [
     component: HomeView
   },
   {
-    path: '/todolist/:id',
+    path: '/:listname',
     name: 'home',
     component: HomeView
   },

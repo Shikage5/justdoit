@@ -39,17 +39,7 @@
             v-model="projectName"
           ></v-text-field>
 
-          <v-btn
-            absolute
-            right
-            color="accent"
-            bottom
-            @click="
-              $store.dispatch('addProject',projectName);
-              $store.dispatch('selectProject', projectName);
-              dialog = false;
-            "
-          >
+          <v-btn absolute right color="accent" bottom @click="addProject()">
             <v-icon left>mdi-plus</v-icon>Add
           </v-btn>
         </v-card>
@@ -79,21 +69,17 @@
 
           <v-list-item-content>
             <v-list-item-title>{{ item }}</v-list-item-title>
-           
           </v-list-item-content>
-           <v-btn
-                x-small
-                icon
-                class=""
-                absolute
-                right
-                @click="
-                  $store.dispatch('deleteProject', item);
-                "
-              >
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
-          
+          <v-btn
+            x-small
+            icon
+            class=""
+            absolute
+            right
+            @click="$store.dispatch('deleteProject', item)"
+          >
+            <v-icon>mdi-delete</v-icon>
+          </v-btn>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -112,6 +98,11 @@ export default class Navigation extends Vue {
   }
   mounted() {
     this.$store.dispatch("getProjectNames");
+  }
+  async addProject() {
+    await this.$store.dispatch("addProject", this.projectName);
+    await this.$store.dispatch("selectProject", this.projectName);
+    this.dialog = false;
   }
 }
 </script>
